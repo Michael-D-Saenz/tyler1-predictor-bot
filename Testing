@@ -7,17 +7,25 @@ from sklearn.compose import make_column_transformer
 from sklearn.pipeline import make_pipeline
 
 file = pd.read_csv('tyler1.csv')
-labels = ['ally_top','enmy_top']
-file2 = file.loc[:,['outcome'] + labels]
-X = file2.drop('outcome',axis = 'columns')
-y = file2.outcome
 
-col_trans = make_column_transformer((OneHotEncoder(handle_unknown = 'ignore'),labels), remainder = 'passthrough')
-model = DecisionTreeRegressor(max_depth=6)
+labels = ['ally_top','enmy_top'] #these are the labels you want to use to predict. they are all column names in my data set.
+
+file2 = file.loc[:,['outcome'] + labels] #filter data to use the labels you want, plus win/loss as 'outcome'
+
+X = file2.drop('outcome',axis = 'columns') #Independent variable
+y = file2.outcome #Dependent variable
+
+col_trans = make_column_transformer((OneHotEncoder(handle_unknown = 'ignore'),labels), remainder = 'passthrough') #One hot encoder since all data is categorical!
+model = DecisionTreeRegressor(max_depth=6) #Regressor of choice with hypeparemether of 6. NEEDS TUNING
 col_trans.fit_transform(X)
 pipe = make_pipeline(col_trans,model)
+
+#When you want to predict a game, put the names of the champs in the draft below
 data = {'ally_top':['cho'],
         'enmy_top':['jax']}
+        
+        
 new = pd.DataFrame(data, columns=labels) 
 pipe.fit(X,y)
+#Value from 0 - 1 where 1 is win and 0 is loss
 pipe.predict(new)
